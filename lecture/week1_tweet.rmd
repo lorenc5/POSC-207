@@ -1,0 +1,160 @@
+---
+title: Tweet Scraping in R (and Python)
+author: Loren Collingwood
+output: pdf_document
+---
+    
+To harvest tweets, the best package in R is rtweet. However the twitter api R 
+uses makes it difficult to harvest tweets (say from a particular hashtag) past 
+6-9 days. Therefore we will use both the rtweet package and the twint python 
+package. 
+
+## Step 1
+
+Install and load rtweet. Look up the rtweet [github](https://github.com/ropensci/rtweet) 
+account to get a better handle on the package's offerings.
+
+```{r, include = FALSE}
+options(scipen = 999, digits = 4)
+```
+
+```{r}
+#install.packages("rtweet")
+library(rtweet)
+```
+
+## Step 2
+
+Harvest the tweets using the search_tweets() function. There are some limitations 
+here so you will need to investigate whether this option works for you.
+
+```{r}
+
+# searches hash tags last 6-9 days or so...
+rstats <- search_tweets(q="Clicks4Kass"); dim(rstats)
+
+# Search Kassra's timeline #
+ko_time <- get_timeline("kassrao", n =3000)
+
+# Dimensions #
+dim(ko_time)
+
+# convert text to lower
+tex <- data.frame(kass_text = tolower(ko_time$text))
+
+# Create dummy indicator
+tex$clicks <- ifelse(grepl("clicks4kass", tex$kass_text)==TRUE, 1, 0)
+
+# Print to Console #
+tex$kass_text[tex$clicks==1]
+
+```
+
+## Step 3
+
+Do you want tweets and hashtags that go back a long ways? Then you will want to 
+use the twint python package. I have written an R function wrapper that works on 
+my Mac OSx computer but has not been tested on Windows and other OSx versions.
+
+The user will need to:
+
+1. [Download](https://www.python.org/downloads/) and install python3
+2. Install the [pip](https://pypi.org/project/pip/) and [twint](https://pypi.org/project/twint/) python packages, ideally using pip installation
+3. There is a possibility that python3 cannot be called from the R system() 
+call due to path issues. I have attempted to solve this with the py_tweet() 
+function though.
+
+```{r}
+
+###################################################
+# Running with Python to get full hashtag history #
+###################################################
+
+# User needs to:
+# Install python3
+# install package twint and pip
+# Variation may exist for windows vs. mac
+
+# Set Directory to where py_tweet.R is located #
+# Note paths are called differently on Windows machines...
+
+setwd("~/Dropbox/collingwood_research/posc_fall_20/POSC-207/lecture"); list.files()
+
+# Now source the function I wrote that creates a python file
+source("py_tweet.R")
+
+# Execute Function #
+py_tweet(  
+    search = "'#Clicks4Kass'", 
+    until = "'2020-09-09'",
+    since = "'2007-01-01'",
+    limit = 10000000, 
+    output = "'Clicks.csv'",
+    pfile = "twitter_hist.py",
+    remove=TRUE
+)
+```
+
+The code should print out all the tweets quickly to the screen, then store them 
+along with metadata to a .csv file.
+
+Now read that data in and do some quick checking.
+
+```{r}
+# Read back in #
+clicks_all <- read.csv("Clicks.csv", header=T)
+
+# Check Dimensions #
+dim(clicks_all)
+
+# Convert Text to Lower #
+clicks_all$tweet <- tolower(clicks_all$tweet)
+
+# Validate that the scraper mostly worked #
+table(grepl("clicks4kass", clicks_all$tweet))
+
+# Look at the 'FALSE' tweets #
+clicks_all[!grepl("clicks4kass", clicks_all$tweet), "tweet"]
+
+# Subset out the 'FALSE' tweets #
+clicks_all <- clicks_all[grepl("clicks4kass", clicks_all$tweet),]
+dim(clicks_all)
+
+# Further Subset Columns
+
+clicks_all <- dplyr::select(clicks_all, date, username, name, 
+                            place, tweet, photos, replies_count, 
+                            retweets_count, likes_count)
+
+# Clean the Text #
+clean_string <- function(string){
+    
+    # Lowercase
+    temp <- tolower(string)
+    
+    # Remove everything that is not a number or letter (may want to keep more 
+    # stuff in your actual analyses). 
+    temp <- stringr::str_replace_all(temp,"[^a-zA-Z\\s]", " ")
+    
+    # Shrink down to just one white space
+    temp <- stringr::str_replace_all(temp,"[\\s]+", " ")
+    
+    # Clean front/back whitespace
+    temp <- stringr::str_trim(temp)
+    
+    return(temp)
+}
+
+# Apply across the character tweet vector #
+clicks_all$tweets_c <- sapply(clicks_all$tweet, 
+                              FUN = clean_string, 
+                              USE.NAMES = F)
+
+head(clicks_all$tweets_c, 3)
+
+# Some Basic Analysis #
+
+#summary ( lm(likes_count ~ factor(username), data = clicks_all) )
+
+#summary ( lm(retweets_count ~ factor(username), data = clicks_all) )
+```
