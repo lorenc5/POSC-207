@@ -1,0 +1,209 @@
+---
+title: Preprocessing Text in R
+author: Loren Collingwood
+output: pdf_document
+---
+    
+Once you have harvested text, the cleaning and preprocessing stage is next 
+before you can proceed to any serious statistical analysis.
+
+## Step 1
+
+Install then load the dplyr and quanteda packages. The latter is the main tool 
+we will work with.
+
+```{r}
+    options(scipen = 999, digits = 4)
+    #install.packages("dplyr")
+    library(dplyr)
+
+    #install.packages("quanteda")
+    library(quanteda)
+
+```
+
+## Step 2
+
+Load the Muslim Ban NYTimes article database
+
+```{r}
+# Set Directory #
+setwd("~/Dropbox/collingwood_research/posc_fall_20/POSC-207/lecture/")
+
+load("nyt_muslim_ban_2017.RData")
+
+# Subset to relevant columns #
+nyts <- dplyr::select(nyt_muslim_ban_2017, response.docs.pub_date, 
+                      response.docs.headline.main, 
+                      response.docs.web_url, 
+                      response.docs.byline.original,
+                      response.docs.section_name,
+                      response.docs.word_count,
+                      text)
+
+```
+
+## Step 3
+
+Generate a corpus to hold all your text
+
+```{r}
+# Convert Text into a corpus #
+nyt_corpus <- corpus(nyts$text)
+
+# Look at the texts in the corpus; in this case text document 3
+
+texts(nyt_corpus)[3]
+
+####################################################
+# Create new docvar onto the data.frame summary()  #
+####################################################
+
+docvars(nyt_corpus, "headline") <- nyts$response.docs.headline.main
+docvars(nyt_corpus, "date") <- as.Date(nyts$response.docs.pub_date)
+docvars(nyt_corpus, "author") <- nyts$response.docs.byline.original
+
+# Look at Number of: Types, Tokens, and Sentences #
+# Look at top 6 documents                         #
+head(summary(nyt_corpus))
+
+# Subset corpus to keep only articles by Adam Liptak #
+adam_corp <- subset(nyt_corpus, nyt_corpus$author=="By Adam Liptak")
+summary(adam_corp)
+
+# Tokenize words then sentences #
+
+#tokenize_word(nyt_corpus)
+tokenize_sentence(nyt_corpus[1])
+```
+
+## Step 4 
+
+Create a document term (or frequency) matrix. This is a very important step and 
+requires some art in the cleaning process. In general, you should aim to thin 
+the matrix as much as possible without losing any useful/useable information.
+
+```{r}
+##################################
+# Document Frequency/Term Matrix #
+##################################
+
+# Convert text to lower, remove stopwords, stem words, and remove punctution #
+# Rows are the 'Documents', columns are 'features'
+nyt_dfm <- dfm(nyt_corpus,
+               tolower=T,
+               remove = stopwords("english"),
+               stem = T,
+               verbose = T,
+               remove_punct = T
+               )
+
+# Look at the feature frequency counts, etc.
+head ( featfreq(nyt_dfm) )
+```
+
+# Step 5
+
+Now you want to trim the matrix even more (real good).
+
+```{r}
+
+############################################
+# Trim the document -- 20, 5 are arbitrary #
+############################################
+
+# Word has to show up at least 20 times and at least in 5 unique documents #
+smalldfm <- dfm_trim(nyt_dfm,minCount=20,minDoc=5)
+smalldfm <- dfm_trim(nyt_dfm, sparsity = 0.8)
+
+# Print it out to see what it looks like
+smalldfm
+
+# Look at the top features real good #
+topfeatures(smalldfm, n = 50)
+
+# Further drop out words that don't tell us much #
+# I typically do this iteratively using 'common. sense.' #
+
+smalldfm2 <- dfm_select(smalldfm, 
+                       pattern = c("said", "mr", "advertis", "also", "like",
+                                   "say", "call", "now", "can", "ms", "make", 
+                                   "just", "may", "go", "ask", "use", "way", 
+                                   "still", "wrote", "week", "want", "sinc", 
+                                   "parti", "ad", "version", "argu", "made",
+                                   "alreadi", "whether", "might", "came", "see",
+                                   "need", "set", "tri", "accord", "show", 
+                                   "yet", "well", "anoth", "must", "mean", "put",
+                                   "turn", "refer", "previous", "becom", "decid",
+                                   "rather", "expect", "good", "part", "effort",
+                                   "consid", "often", "today", "mani"),
+                       selection= "remove")
+
+topfeatures(smalldfm2, n = 50)
+```
+
+# Step 6
+Take a look at feature co-occurence. This is sort of akin to descriptive 
+statistics.
+
+```{r}
+
+################################
+# Feature Co-Occurrence Matrix #
+################################
+
+nyt_co <- fcm(smalldfm2,
+              ordered=T)
+
+# Convert this to  data frame #
+nyt_dat <- convert(nyt_co, to = "data.frame")
+
+muslim_vec <- nyt_dat[3,]
+muslim_vec <- muslim_vec[-1]
+
+# top 50 co-occurring words with muslim
+rev(sort(muslim_vec))[1:50]
+
+```
+
+# Step 7 
+
+Understanding term frequency, inverse document frequencies. Basically, the higher 
+the number the more distinct that word is to that particular document. The Tf-idf 
+will become very important later (although under the hood).
+
+```{r}
+
+### Tf-idf weighting ###
+# The higher the number the more unique that word is to that document #
+
+tf.idf <- dfm_tfidf(smalldfm2,
+                    scheme_tf = 'prop')
+
+tf.idf
+
+# Term Frequency: Frequency of times word shows up in document divided by 
+# total number of words in the document
+
+head(docfreq(smalldfm2))
+
+doc_df <- convert(smalldfm2, "data.frame")
+
+# Let's just look at the first textual document #
+doc1 <- doc_df[1,]
+
+# Drop the first doc_id entity
+doc1 <- doc1[-1]
+
+# Calculate tf #
+tf <- doc_df$govern[1]/sum(doc1)
+
+# Calculate idf #
+n <- nrow(doc_df)
+s <- table( ifelse(doc_df$govern >= 1, 1, 0) )[2]
+idf <- log10(n/s)
+
+# Calculate tf-idf #
+tf*idf
+
+```
