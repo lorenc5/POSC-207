@@ -1,0 +1,183 @@
+---
+title: Text Scaling
+author: Loren Collingwood
+output: pdf_document
+---
+    
+This script reviews how to use wordscores and wordfish in R. These are two methods 
+political scientists have used and use to generate unidimensional scales of text 
+documents (e.g., ideology of speech liberal to conservative). Although significant 
+advancements in scaling have been made, you can still use these methods to great 
+effect to understand your textual data (based on theories you may have). A lot of 
+work in this space looks at party manifestos (in European parliaments) or party 
+platforms and/or speeches. However, if your theory makes sense, you can apply it 
+in many contexts, for example, below I apply it to news coverage of homicides in 
+Chicago.
+
+## Step 1
+
+Training a Wordscores model requires reference scores for texts whose policy 
+positions on well-defined a priori dimensions are "known". Afterwards, Wordscores 
+estimates the positions for the remaining "virgin" texts.
+
+We use manifestos of the 2013 and 2017 German federal elections. For the 2013 
+elections we assign the average expert evaluations from the 2014 Chapel Hill 
+Expert Survey for the five major parties, and predict the party positions for 
+the 2017 manifestos.
+
+```{r}
+options(scipen = 999, digits = 4)
+#############################
+# Install and Load Packages #
+#############################
+
+#install.packages("quanteda")
+library(quanteda)
+#install.packages("quanteda.textmodels")
+library(quanteda.textmodels)
+#install.packages("readxl")
+library(readxl)
+
+# Gather the Corpus of text I've stored it locally in RDS file #
+corp_ger <-  readRDS("~/Dropbox/collingwood_research/posc_fall_20/POSC-207/data/data_corpus_germanifestos.rds")
+summary(corp_ger)
+
+```
+
+# Step 2
+Convert the corpus to a document term/frequency matrix
+
+```{r}
+# Create a Document-Feature/Term Matrix #
+dfmat_ger <- dfm(corp_ger, remove = stopwords("de"), remove_punct = TRUE)
+```
+
+# Step 3
+Apply Wordscores algorithm to document-feature matrix
+
+```{r}
+tmod_ws <- textmodel_wordscores(dfmat_ger, y = corp_ger$ref_score, smooth = 1)
+summary(tmod_ws)
+```
+
+# Step 4
+Predict the Wordscores on the virgin text, then plot it out.
+
+```{r}
+pred_ws <- predict(tmod_ws, se.fit = TRUE, newdata = dfmat_ger)
+
+# Plot it out real good #
+textplot_scale1d(pred_ws)
+```
+
+Now try it out with  toy example. This will give you sort of funky but still 
+somewhat interpretable results.
+
+```{r}
+# Create a corpus
+feaux_corp <- corpus(
+    c("this is love",
+    "hate is all i've got",
+    "these losers suck so much",
+    "love and like the dogs they're pretty",
+    "mitt romney hates to vote that way he won't",
+    "trump is a hater and loser, I hate him so much",
+    "biden is a loser and hater, he just loses always",
+    "harris will win she's the best omg, love harris ",
+    "when you're young you're idealstic but that's not wrong",
+    "politics is about doing what's right so really its an effort of love")
+)
+
+# Add on the toy scores #
+docvars(feaux_corp, "ref_score") <- c(10, 1, 2, 8,NA, NA, NA, NA, NA, 9)
+
+# Take  look real nice #
+summary(feaux_corp)
+
+# Create a Document-Feature/Term Matrix #
+dfmat_feaux <- dfm(feaux_corp, 
+                 remove = stopwords("english"), 
+                 remove_punct = TRUE)
+
+# Apply Wordscores algorithm to document-feature matrix
+tmod_ws <- textmodel_wordscores(dfmat_feaux, y = feaux_corp$ref_score, smooth = 1)
+summary(tmod_ws)
+
+# Predict the Wordscores on the virgin text #
+pred_ws <- predict(tmod_ws, se.fit = TRUE, newdata = dfmat_feaux)
+
+# Plot it out real good #
+textplot_scale1d(pred_ws)
+```
+
+# Wordfish Scaling 
+
+# Step 1
+Read in the data, this comes from media stories about homicide victims in  
+Chicago in 2014 during the months of August and September (or so).
+
+```{r}
+# Read in Data #
+nc <- read_xlsx("~/Dropbox/collingwood_research/posc_fall_20/POSC-207/data/news_coverage_WordfishReady.xlsx", sheet = 1)
+
+# Relabel column 3 #
+colnames(nc)[3] <- "victim_text"
+```
+
+# Step 2
+Turn data into corpus then document frequency/term matrix 
+
+```{r}
+# Turn text into corpus #
+vcorpus <- corpus(nc$victim_text)
+head(summary(vcorpus))
+
+vdfm <- dfm(vcorpus, stem=T, 
+            remove_numbers=T,
+            remove_punct=T, 
+            remove = stopwords("english"))
+# Look at top set of rows
+vdfm
+```
+
+# Step 3
+
+Estimate a Wordfish model but before you do you need to identify documents that 
+are polar on the dimension of interest. A priori here I had identified documents 
+27 and 11, respectively.
+
+```{r}
+# Look at 27
+vcorpus[[27]]
+
+# Look at 11
+vcorpus[[11]]
+
+# Wordfish Model #
+wf <- textmodel_wordfish(vdfm, 
+                dir=c(27,11))# directional command -- want global identification 
+                             # so that document 2 receives lower value than 
+                             # document 1
+
+# Take a look at the summary #
+summary(wf)
+
+# Store the theta document estimates and se's #
+sumwf <- summary(wf)$estimated.document.positions
+
+# Merge the scores and the text together (real good) #
+text_scaling <- data.frame(sumwf, nc$victim_text)
+colnames(text_scaling)[3] <- "victim_text"
+
+# Sort the data frame (nice and good) #
+text_final <- text_scaling[order(text_scaling[["theta"]]),]
+
+# Take a look at the distribution #
+hist(text_final$theta)
+
+# Look at the distribution more formally
+textplot_scale1d(wf)
+
+# Then look at the words on either end that pop out
+textplot_scale1d(wf, margin = "features")
+```
