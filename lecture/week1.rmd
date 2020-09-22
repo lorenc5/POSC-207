@@ -1,7 +1,7 @@
 ---
 title: Webscraping in R using Rvest
 author: Loren Collingwood
-output: html_document
+output: pdf_document
 ---
     
 To harvest text, the webscraping skillset is a must. This vignette introduces 
@@ -64,9 +64,117 @@ looking for unique html tags that identify what you want to scrape
 is a private corrections firm publicly traded on the NYSE. The company produces 
 newsletters to shareholders publicly available on its website. Let's scrape these.
 
+```{r}
+
+library(stringr)
+library(dplyr)
+library(data.table)
+
+setwd("~/Dropbox/collingwood_research/posc_fall_20/POSC-207/data")
+
+list.files()
+
+######################
+# Read in Links Data #
+######################
+
+links <- read.csv("cca_links.csv", header=T, stringsAsFactors = F)
+
+links <- links$link
+
+# Initiate list holder/container #
+cca_hold <- list()
+
+n <- length(links)
+
+#################
+# Initiate Loop #
+#################
+
+for (i in 1:n){
+
+  if (i == 1) message("Start")
+  if (i == round(n*.5,0)) message("50% Done")
+  if (i == n) message("Done!")
+  
+  #############################################
+  # Read in Link -- this is the main iterator #
+  #############################################
+  
+  cca <- read_html(links[i])
+  
+  ################
+  # Extract Date #
+  ################
+  
+  text <- html_text(html_nodes(cca, "div div")); length(text)
+  
+  # Date Regular Expression and Clean #
+  dates <- str_squish(str_extract(text, "[a-zA-Z]+ [0-9]+[,]+\\s+[0-9]{4}"))
+  
+  # Further Cleaning #
+  dates <- dates[!is.na(dates)][1] # take out nas and select first date
+  
+  ####################
+  # Extract Headline #
+  ####################
+  
+  # Collapse Text into Vector #
+  text <- paste(text, collapse=" ")
+  
+  text_manip <- unlist ( str_split(text, dates) )[1] # take the first split on the date
+  text_manip <- unlist(str_split(text_manip, "\n\n\n")) # Assumes \n\n\n is in all releases
+  text_manip <- text_manip[length(text_manip)] # assumes the headline is last
+  headline <- str_trim(text_manip) # Store into headline vector
+  
+  rm(text) # Garbage Clean #
+  
+  ######################################
+  # Get Paragraph Text of News Release #
+  ######################################
+  
+  text <- html_text(html_nodes(cca, "div p")); length(par)
+  text <- paste(text, collapse = " ")
+  text <- gsub("\r","", text)
+  text <- gsub("\n","", text)
+  
+  # Place data frame into List Item #
+  cca_hold[[i]] <- data.frame(dates, headline, text, stringsAsFactors = F)
+  
+}
+
+###########################################
+# Convert List of dataframes to dataframe #
+###########################################
+
+cca_df <- rbindlist(cca_hold)
+
+########################
+# Look at Column Names #
+########################
+
+names(cca_df)
+
+#################
+# Look at Dates #
+#################
+
+cca_df$dates <- lubridate::mdy(cca_df$dates) # Convert dates #
+cca_df$year <- lubridate::year(cca_df$dates) # Convert dates #
+head(cca_df$headline)
+
+############################################
+# Take a quick look at Yearly Distribution #
+############################################
+
+hist(cca_df$year)
+
+
+```
+
 ## Summary
 
 This vignette has provided a brief overview of the workflow for using webscraping 
 in R.
 
-- `resolve_missing_vals()`
+
