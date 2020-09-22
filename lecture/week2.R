@@ -113,6 +113,9 @@ smalldfm2 <- dfm_select(smalldfm,
 
 topfeatures(smalldfm2, n = 50)
 
+#dfm_out <- convert(smalldfm2, "data.frame")
+#write.csv(dfm_out, "smalldfm2.csv", row.names = F)
+
 ################################
 # Feature Co-Occurrence Matrix #
 ################################
