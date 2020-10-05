@@ -1,0 +1,303 @@
+% Don't touch this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[11pt]{article}
+\usepackage{fullpage}
+\usepackage[left=1in,top=1in,right=1in,bottom=1in,headheight=3ex,headsep=3ex]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+
+\newcommand{\blankline}{\quad\pagebreak[2]}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Modify Course title, instructor name, semester here %%%%%%%%
+
+\title{POSC 207: Quantitative Text Analysis for the Social Sciences}
+\author{Loren Collingwood}
+\date{Fall, 2020}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Don't touch this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[sc]{mathpazo}
+\linespread{1.05} % Palatino needs more leading (space between lines)
+\usepackage[T1]{fontenc}
+\usepackage[mmddyyyy]{datetime}% http://ctan.org/pkg/datetime
+\usepackage{advdate}% http://ctan.org/pkg/advdate
+\newdateformat{syldate}{\twodigit{\THEMONTH}/\twodigit{\THEDAY}}
+\newsavebox{\MONDAY}\savebox{\MONDAY}{Mon}% Mon
+\newcommand{\week}[1]{%
+%  \cleardate{mydate}% Clear date
+% \newdate{mydate}{\the\day}{\the\month}{\the\year}% Store date
+  \paragraph*{\kern-2ex\quad #1, \syldate{\today} - \AdvanceDate[4]\syldate{\today}:}% Set heading  \quad #1
+%  \setbox1=\hbox{\shortdayofweekname{\getdateday{mydate}}{\getdatemonth{mydate}}{\getdateyear{mydate}}}%
+  \ifdim\wd1=\wd\MONDAY
+    \AdvanceDate[7]
+  \else
+    \AdvanceDate[7]
+  \fi%
+}
+\usepackage{setspace}
+\usepackage{multicol}
+%\usepackage{indentfirst}
+\usepackage{fancyhdr,lastpage}
+\usepackage{url}
+\pagestyle{fancy}
+\usepackage{hyperref}
+\usepackage{lastpage}
+\usepackage{amsmath}
+\usepackage{layout}
+
+\lhead{}
+\chead{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Modify header here %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\rhead{\footnotesize Text in header}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Don't touch this %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\lfoot{}
+\cfoot{\small \thepage/\pageref*{LastPage}}
+\rfoot{}
+
+\usepackage{array, xcolor}
+\usepackage{color,hyperref}
+\definecolor{clemsonorange}{HTML}{EA6A20}
+\hypersetup{colorlinks,breaklinks,linkcolor=clemsonorange,urlcolor=clemsonorange,anchorcolor=clemsonorange,citecolor=black}
+
+\begin{document}
+
+\maketitle
+
+\blankline
+
+\begin{tabular*}{.93\textwidth}{@{\extracolsep{\fill}}lr}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Modify information %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+E-mail: \texttt{loren.collingwood@ucr.edu} \\
+Web: \href{https://github.com/lorenc5/POSC-207}{\tt\bf https://github.com/lorenc5/POSC-207}  \\
+Office Hours: T 2-5pm \\ 
+Class Hours: T 9-11:50am \\
+Office: NA \\ 
+Class Room: \href{https://ucr.zoom.us/j/92778212788?pwd=bFdjUjBZVWd1OXNIakpXdE9JR3FLUT09}{https://ucr.zoom.us/j/92778212788?pwd=bFdjUjBZVWd1OXNIakpXdE9JR3FLUT09} \\
+Meeting ID:  927 7821 2788 \\
+Passcode:  87863 \\
+&  \\
+\hline
+\end{tabular*}
+
+\vspace{5 mm}
+
+% First Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Course Description}
+
+This course investigates how to use digitized texts -- news articles, speeches, laws, press releases, party manifestos/platforms, transcripts, open-ended surveys, Tweets, etc. -- as sources of data for social science research.
+
+We begin with overviews of the ``text as data'' field in political science -- which is heavily influenced by computer science branch of natural language processing (NLP). The idea is to get you data as a poor graduate student for free that you can then use in your own research to answer questions of theoretical interest.
+
+We then discuss theory/mechanics of converting text into data. This will include topics like preprocessing text and related NLP tasks (e.g., stemming, tokenizing) and representing text as data (e.g., bag-of-words, measures of association), etc. Text data is often ``messy'' so handling that will be a large part of this course (e.g., web scraping, file encodings, file formats, extracting only relevant text from strings, etc.).
+
+We'll then turn to the major approaches to measuring social science concepts with textual data, including rule-based methods, supervised learning from human-coded or known examples, and un-supervised methods. As we go, we will discuss particular measurement objectives like classification, scaling, topic modeling, and analysis of sentiment and stance, as well as ways of validating our models. 
+
+Depending on time, student interest and capacity, we may learn about the neural network / deep learning approach that has come to dominate NLP in recent years.
+
+The course will assume students have some graduate level work in statistical inference, quantitative social science methodology, or machine learning, and at least know what R is but ideally some experience with R.
+
+\bigskip
+
+
+% Second Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Required Materials}
+
+\begin{itemize}
+\item All readings are posted to course website
+\end{itemize}
+
+% Third Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\section*{Prerequisites/Corequisites}
+%Prerequisites: MA 116, ... .  Corequisites: ... .
+
+% Fourth Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Course Objectives}
+Successful students will learn how to:
+\begin{enumerate}
+\item Improve R programming capacity
+\item Webscrape and organize their own textual data
+\item Select appropriate text method to analyze data
+\item Use data to answer/assess theoretical questions of interest
+\item Be confident moving forward they can use whatever text-based methods they choose
+\end{enumerate}
+
+% Fifth Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Course Structure}
+
+\subsection*{Class Structure}
+
+Lecture (1/3), Discussion (1/3), Code (1/3)
+
+
+\subsection*{Assessments}
+
+\begin{enumerate}
+\item Weekly assignments
+\item Research Design and Analysis
+\item Final Presentation
+\end{enumerate}
+
+\subsubsection*{Research Design/Analysis and Final Presentation}
+
+All students will turn in a research design/analysis of a project of their choice. If ongoing project, text as data methods must be incorporated in addition to existing design.
+
+\subsection*{Grading Policy}
+
+\begin{itemize}
+	\item \underline{\textbf{50\%}} of your grade will be determined by weekly assignments
+	\item \underline{\textbf{25\%}} of your grade will be determined by research design and analysis
+	\item \underline{\textbf{25\%}} of your grade will be determined by final presentation
+\end{itemize}
+
+% Fifth Section %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section*{Course Policies}
+
+\subsection*{During Class}
+\footnotesize{Log in on time. The first 5-10 minutes we might do some sort of ``ice-breaker'' just to get it rolling in the zoom land. Ask questions whenever you have them and I will try to answer as best I can. I will often have code and data available in advance. So go to the course website and download anything in advance of each class.}
+
+\subsection*{Attendance Policy}
+\footnotesize{Attendance is expected in all classes. Valid excuses for absence will be accepted before class, please just email me in advance.}
+
+\subsection*{Policies on Incomplete Grades and Late Assignments}
+\footnotesize{If throughout the quarter you suspect you will not be able to complete the course or hand in all the material, please discuss the possibility of an Incomplete with me. Turn all assignments in on time before the class starts. Extensions may be granted in extenuating circumstances.}
+
+\subsection*{Academic Integrity and Honesty}
+\footnotesize{Students are required to comply with the university policy on academic integrity. In effect, in this class, for all papers and research designs you generate, while your work can be based on others', the content must be solely yours.}
+
+\subsection*{Accommodations for Disabilities}
+\footnotesize{Reasonable accommodations will be made for students with verifiable disabilities. In order to take advantage of available accommodations, students must register with the Disability Services Office and let me know in advance.}
+
+\footnotesize{Discrimination based on race, color, religion, creed, sex, national origin, age, disability, veteran status, or sexual orientation will not be tolerated. Harassment of any person (either in the form of quid pro quo or creation of a hostile environment) based on race, color, religion, creed, sex, national origin, age, disability, veteran status, or sexual orientation also is not be tolerated. Retaliation against any person who complains about discrimination is also prohibited.}
+
+% Course Schedule %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section*{Schedule and weekly learning goals}
+
+The schedule is tentative and subject to change. The learning goals below should be viewed as the key concepts and code you should grasp after each week, and also as a study guide before each exam, and at the end of the semester. Each exam will test on the material that was taught up until 1 week prior to the exam (i.e. vorticity will not be tested until exam 2). The applications in the second half of the semester tend to build on the concepts in the first half of the semester though, so it is still important to at least review those concepts throughout the semester.
+
+% Set first date of the semester (for some reason this is a week before what comes up, but that's easy to get around)
+
+
+\begin{itemize}
+	\item \textbf{Week 01, 10/05 - 10/09} Topic 1 - Intro, Text Harvesting, and Cleaning
+	\begin{itemize}
+	\item Use package Rvest, understand selector gadget
+	\item Scraping Twitter (currently problem with api)
+	\item Handling media data from Nexus or Proquest
+	\item Hitting NYT API
+	\item Possible Special Guest: Sean Long
+	\item Readings: Wilkerson and Casas (2017); Grimmer and Stewart (2013)
+	\item Assignment: Develop a text corpus you will use for rest of course.
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 02, 10/12 - 10/16} Topic 2 -- Preprocessing and Feature Representation
+	\begin{itemize}
+	\item Use quanteda package, possibly preText package
+	\item Tokenizing, bag of words
+	\item Document Term Matrix
+	\item Readings: Denny and Spirling (2017); Diermeier et al. 2011; Jivani 2011
+	\item Assignment: Convert your corpus into document term matrix, and clean that matrix
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 03, 10/19 - 10/23} Topic 3 -- Comparing Texts, Scaling
+	\begin{itemize}
+	\item Use textreuse package, insights into RCopyFind package; quanteda package
+	\item Word co-occurence; Cosine Similarity
+	\item Text reuse
+	\item Special Guest: Stephanie DeMora
+	\item Readings: DeMora, Collingwood, and Ninci 2019; Wilkerson, Smith, and Stramp 2015; Laver, Benoit, and Garry (2003); Lowe (2008); Slapin and Proksch (2008)
+	\item Assignment: Conduct some type of text comparison/scaling analysis depending on your data. 
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 04, 10/26 - 10/30} Topic 4 --  Sentiment and Dictionary Methods
+	\begin{itemize}
+	\item quanteda package
+	\item Collingwood example code from CGU
+	\item Special Guest: Dr. Kassra Oskooii
+	\item Readings: Young and Soroka (2013); Oskooii, Lajevardi, and Collingwood (2019)
+	\item Assignment: Develop a dictionary or find a dictionary that makes sense to what you are doing.
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 05, 11/2 - 11/06} Topic 5 -- Supervised Machine Learning
+	\begin{itemize}
+	\item Use RTextTools package
+	\item Readings: Collingwood and Wilkerson 2012; Jurka et al. 2013
+	\item Suggested Readings: Krippendorff, 2004: \emph{Content Analysis: An introduction to its methodology}
+	\item Assignment: Hand-code a portion of your data (if not already coded), then conduct supervised learning on it and predict onto virgin text. NOTE: you will likely not have enough hand-coded data to do this well but the exercise is useful.
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 06, 11/09 - 11/13} Topic 6 -- Unsupervised Machine Learning
+	\begin{itemize}
+	\item LDA Model
+	\item STM Model
+	\item Readings: Roberts, Stewart, Tingley, 2013; Roberts et al. 2014; Blei 2012; Blei, Ng, and Jordan 2003; 
+	\item Suggested Readings: Bagozzi and Berliner 2018; Berliner, Bagozzi, and Rubin
+	\item Assignment: Conduct some type of topic model on your data.
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 07, 11/16 - 11/20} Topic 7 -- Neural Networks and Deep Learning 
+	\begin{itemize}
+	\item Special Guest: Dr. Sarah Dreier
+	\item Readings: Dreier et al. (Working Paper); Willems: \href{https://www.datacamp.com/community/tutorials/keras-r-deep-learning}{https://www.datacamp.com/community/tutorials/keras-r-deep-learning}
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 08, 11/23 - 11/27} Topic 8 -- Text analysis and causal inference
+	\begin{itemize}
+	\item Use packages stm and textmatching (still somewhat new)
+	\item Readings: Egami et al., 2018; Roberts et al. 2020
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 09, 11/30 - 12/04} Topic 9 -- Word Embeddings (Word 2 Vec) and contextualized word embeddings
+	\begin{itemize}
+	\item Use packages text2vec; word2vec
+	\item Readings: Smith 2019; Mikolov et al 2013
+	\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item \textbf{Week 10, 12/07 - 12/11} Topic 10 -- Final Presentations; LC Special: Bayesian Improved Surname Geocoding (BISG)
+	\begin{itemize}
+	\item Student presentations, 15-20 minutes each
+	\item use package eiCompare
+	\item Readings: Elliot et al (2008); Imai and Khanna (2016)
+	\end{itemize}
+\end{itemize}
+
+
+
+\end{document}
+
+
