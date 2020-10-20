@@ -17,6 +17,7 @@ library(quanteda)
 #################
 # Set Directory #
 #################
+
 # Swap this out with your directory (where you stored the NYT muslim ban rdata) #
 setwd("~/Dropbox/collingwood_research/posc_fall_20/POSC-207/lecture/")
 
@@ -70,7 +71,7 @@ tokenize_sentence(nyt_corpus[1])
 # Document Frequency/Term Matrix #
 ##################################
 
-# Convert text to lower, remove stopwords, stem words, and remove punctution #
+# Convert text to lower, remove stopwords, stem words, and remove punctuation #
 # Rows are the 'Documents', columns are 'features'
 nyt_dfm <- dfm(nyt_corpus,
                tolower=T,
@@ -125,6 +126,8 @@ nyt_co <- fcm(smalldfm2,
 
 # Convert this to  data frame #
 nyt_dat <- convert(nyt_co, to = "data.frame")
+
+nyt_dat[, c("doc_id", "trump")]
 
 muslim_vec <- nyt_dat[3,]
 muslim_vec <- muslim_vec[-1]
