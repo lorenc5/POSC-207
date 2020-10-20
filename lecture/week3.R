@@ -39,6 +39,9 @@ nyt <- as.dfm(nyt)
 
 head(textstat_lexdiv(nyt))
 
+a <- textstat_lexdiv(nyt)
+hist(a[,2])
+
 # Calculate lexical diversity 'by hand' #
 table( ifelse(nyt[1,] >=1, 1,0) )[2] / 
 sum(nyt[1,])
@@ -59,6 +62,11 @@ textstat_collocations(click_corp,
                       size =4, 
                       min_count=4)
 
+textstat_collocations(click_corp, 
+                      size =6, 
+                      min_count=4)
+
+
 ###########################
 ##  Document similarity  ##
 ###########################
@@ -66,6 +74,10 @@ textstat_collocations(click_corp,
 head(tsimil <- textstat_simil(nyt,
                     method = "cosine"))
 
+which.max(tsimil[1,-1]) # doc 33
+which.min(tsimil[1,])   # doc 52
+
+tsimil[11,]
 
 # Take a look at two documents that score above .80 cosine similarity
 load("nyt_muslim_ban_2017.RData")
